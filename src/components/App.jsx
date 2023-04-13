@@ -1,72 +1,53 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import '../styles.css';
-import { Form } from './Form/Form';
-import { Contacts } from './Contacts/Contacts';
-import { Section } from './Section/Section';
+import Form from './Form/Form';
+import Contacts from './Contacts/Contacts';
+import Section from './Section/Section';
 import PropTypes from 'prop-types';
 
-class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+const App = () => {
+  const [contacts, setContacts] = useState([]);
 
-  handleContactCreator = newContact => {
-    const updatedContacts = [...this.state.contacts, newContact];
-    this.setState({
-      contacts: updatedContacts,
-    });
+  const handleContactCreator = newContact => {
+    const updatedContacts = [...contacts, newContact];
+    setContacts(updatedContacts);
     localStorage.setItem('contacts', JSON.stringify(updatedContacts));
   };
 
-  constructor(props) {
-    super(props);
+  useEffect(() => {
     const storedContacts = localStorage.getItem('contacts');
     if (storedContacts) {
-      this.state = {
-        contacts: JSON.parse(storedContacts),
-      };
+      setContacts(JSON.parse(storedContacts));
     }
-  }
+  }, []);
 
-  componentDidUpdate(prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+  useEffect(() => {
+    if (contacts) {
+      localStorage.setItem('contacts', JSON.stringify(contacts));
     }
-  }
+  }, [contacts]);
 
-  deleteContact = id => {
-    this.setState({
-      contacts: this.state.contacts.filter(contact => contact.id !== id),
-    });
+  const deleteContact = id => {
+    setContacts(contacts.filter(contact => contact.id !== id));
   };
 
-  render() {
-    return (
-      <div>
-        <Section
-          title={'Phonebook'}
-          object={
-            <Form
-              contacts={this.state.contacts}
-              onContactCreate={this.handleContactCreator}
-            />
-          }
-        />
-        <Section
-          title="Contacts"
-          object={
-            <Contacts
-              contacts={this.state.contacts}
-              deleteContact={this.deleteContact}
-            />
-          }
-        />
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <Section
+        title={'Phonebook'}
+        object={
+          <Form contacts={contacts} onContactCreate={handleContactCreator} />
+        }
+      />
+      <Section
+        title="Contacts"
+        object={<Contacts contacts={contacts} deleteContact={deleteContact} />}
+      />
+    </div>
+  );
+};
+
 export default App;
 
 App.propTypes = {
